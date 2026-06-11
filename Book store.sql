@@ -1,0 +1,166 @@
+-- ALTERING BOOKS TABLE 
+CREATE TABLE `books` (
+  `Book_ID` int DEFAULT NULL,
+  `Title` text,
+  `Author` text,
+  `Genre` text,
+  `Published_Year` int DEFAULT NULL,
+  `Price` double DEFAULT NULL,
+  `Stock` int DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+ALTER TABLE books
+MODIFY Book_ID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+MODIFY Title VARCHAR(100),
+MODIFY Author VARCHAR(100),
+MODIFY Genre VARCHAR(50),
+MODIFY Price NUMERIC(10,2);
+
+-- ALTERING CUSTOMER TABLE 
+CREATE TABLE `customers` (
+  `Customer_ID` int DEFAULT NULL,
+  `Name` text,
+  `Email` text,
+  `Phone` int DEFAULT NULL,
+  `City` text,
+  `Country` text
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+ALTER TABLE customers
+MODIFY Customer_ID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+MODIFY Name VARCHAR(100),
+MODIFY Email VARCHAR(100),
+MODIFY Phone VARCHAR(15),
+MODIFY City VARCHAR(50),
+MODIFY Country VARCHAR(150);
+
+-- ALTERING ORDERS TABLE 
+CREATE TABLE `orders` (
+  `Order_ID` int DEFAULT NULL,
+  `Customer_ID` int DEFAULT NULL,
+  `Book_ID` int DEFAULT NULL,
+  `Order_Date` text,
+  `Quantity` int DEFAULT NULL,
+  `Total_Amount` double DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+ALTER TABLE orders
+MODIFY Order_ID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+MODIFY Customer_ID INT,
+MODIFY Book_ID INT,
+MODIFY Order_Date DATE,
+MODIFY Total_Amount NUMERIC(10,2),
+ADD CONSTRAINT fk_customer
+FOREIGN KEY (Customer_ID) REFERENCES customers(Customer_ID),
+ADD CONSTRAINT fk_book
+FOREIGN KEY (Book_ID) REFERENCES books(Book_ID);
+
+SELECT * FROM books;
+SELECT * FROM customers;
+SELECT * FROM orders;
+
+-- 1. RETRIEVE ALL THE BOOKS IN THE FICTION GENRE:
+SELECT * FROM books
+WHERE Genre="Fiction";
+
+-- 2. FIND BOOKS PUBLISHED AFTER THE YEAR 1950:
+SELECT * FROM books
+WHERE Published_Year>1950;
+
+-- 3. LIST ALL THE CUSTOMERS FROM THE CANADA:
+SELECT * FROM customers
+WHERE Country="Canada";
+
+-- 4. SHOW ORDERS PLACED IN NOVEMBER 2023:
+SELECT * FROM orders
+WHERE order_date BETWEEN "2023-11-01" AND "2023-11-30";
+
+-- 5. RETRIEVE THE TOTAL STOCK OF BOOKS AVAILABLE:
+SELECT SUM(stock) AS Total_Stock
+FROM books;
+
+-- 6. FIND THE DETAILS OF THE MOST EXPENSIVE BOOKS:
+SELECT * FROM books
+ORDER BY price DESC
+LIMIT 1;
+
+-- 7. SHOW ALL THE CUSTOMERS WHO ORDERD MORE THAN 1 QUANTITY OF A BOOK:
+SELECT * FROM orders
+WHERE quantity>1;
+
+-- 8. RETRIEVE ALL ORDERS WHERE THE TOTAL AMOUNT EXCEEDS $20:
+SELECT * FROM orders
+WHERE Total_Amount>20;
+
+-- 9. LIST ALL GENERE AVAILABLE IN THE BOOKS TABLE:
+SELECT DISTINCT genre 
+FROM books;
+
+-- 10. FIND THE BOOKS WITH THE LOWEST STOCK:
+SELECT * FROM books
+ORDER BY Stock
+LIMIT 1;
+
+-- 11. CALCULATE THE TOTAL REVENUE GENERATED FROM ALL ORDERS:
+SELECT SUM(Total_amount) AS Revenue
+FROM Orders;
+
+-- ADVANCE QUESTIONS 
+-- 1. RETERIVE THE TOTAL NUMBER OF BOOKS SOLD  FROM EACH GENRE
+SELECT * FROM orders;
+
+SELECT b.Genre , SUM(o.Quantity) AS Total_books_sold
+FROM orders o
+JOIN books b  
+ON o.book_id= b.book_id
+GROUP BY b.Genre;
+
+-- 2. FIND THE AVERAGE PRICE OF BOOKS IN THE FANTASY GENRE:
+SELECT AVG(Price) AS Average_price
+FROM books
+WHERE Genre="Fantasy";
+
+-- 3. LIST THE CUSTOMERS WHO HAVE PLACED AT LEAST 2 ORDERS:
+SELECT o.customer_id, c.name, COUNT(o.order_id) AS Order_count
+FROM orders o
+JOIN customers c 
+ON o.Customer_ID= c.Customer_ID
+GROUP BY o.customer_id, c.name 
+HAVING COUNT(o.order_id)>=2;
+
+-- 4. FIND THE MOST FREQUENT ORDERD BOOK:
+SELECT o.Book_id, b.title, COUNT(o.order_id) AS ORDER_COUNT
+FROM orders o
+JOIN books b 
+ON o.book_id=b.book_id
+GROUP BY o.book_id, b.title
+ORDER BY ORDER_COUNT DESC LIMIT 1;
+
+-- 5. SHOW THE TOP 3 MOST EXPENSIVE BOOKS OF FANTACY GENRE:
+SELECT * FROM books 
+WHERE genre="Fantasy"
+ORDER BY price DESC 
+LIMIT 3;
+
+-- 6. RETEIEVE THE TOTAL QUANTITY OF BOOKS SOLD BY EACH AUTHOR: 
+SELECT b.author, SUM(o.quantity) AS Total_Books_sold
+FROM orders o
+JOIN books b 
+ON o.book_id=b.book_id
+GROUP BY b.author;
+
+-- 7. LIST THE CITIES WHERE CUSTOMERS WHO SPENT OVER $30 ARE LOCATED:
+SELECT DISTINCT c.city, o.total_amount
+FROM orders o
+JOIN customers c
+ON o.Customer_ID=c.Customer_ID
+WHERE o.total_amount >30;
+
+-- 8. FIND THE CUSTOMERS WHO SPENT THE MOST ON ORDERS:
+SELECT c.customer_id, c.name, SUM(o.total_amount) AS Total_spent
+FROM orders o
+JOIN customers c
+ON o.Customer_ID=c.Customer_ID
+GROUP BY c.customer_id, c.name
+ORDER BY Total_spent DESC;
+
